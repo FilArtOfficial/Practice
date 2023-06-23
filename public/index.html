@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Search and Save</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <input type="text" id="keyword">
+    <button onclick="search()">Search</button>
+    <ul id="result"></ul>
+    <div id="filesize"></div>
+    
+
+    <script>
+      window.download = async function(url) {
+        try {
+          const response = await fetch(`/download/${url}`);
+          const data = await response.json();
+          const content = data.content;
+          localStorage.setItem('content', content);
+          console.log(`Download complete for "${url}".`);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      function search() {
+        let keyword = $("#keyword").val();
+        console.log(`Searching for "${keyword}"...`);
+        $.get(`/search/${encodeURIComponent(keyword)}`, function(data) {
+          console.log(`Received ${data.length} URLs.`);
+          for (let i = 0; i < data.length; i++) {
+            const link = document.createElement('a');
+            link.href = "#";
+            link.innerHTML = `Download ${data[i]}`;
+            link.onclick = function(event) {
+              event.preventDefault();
+              window.download(encodeURIComponent(data[i]));
+            };
+            const li = document.createElement('li');
+            li.appendChild(link);
+            $("#result").append(li);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
